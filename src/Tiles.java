@@ -12,6 +12,10 @@ public class Tiles extends Rectangle{
 	public void setPiece(Piece piece) {
 		this.piece = piece;
 	}
+	
+	public boolean hasPiece() {
+		return piece != null;
+	}
 
 	public Tiles(boolean color, int x, int y) {
 		setWidth(HalmaGame.tileSize);
