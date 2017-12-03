@@ -25,20 +25,20 @@ public class HalmaGame extends Application {
 	public static int tileSize = 100, tileWidth = 8, tileHeight = 8; // Dimensions for board
 																		
 	private int redCounter = 3, blueCounter = 11; // Counters for placing pieces
-	private int turnCounter = 1;
-	private int moveCounter = 0;
-	private int jumpCounter = 0;
-	private int x0, y0, x1, y1, tempX, tempY;
+	private int turnCounter = 1; //Count how many turns have been taken
+	private int moveCounter = 0; //Restrict only one movement per turn
+	private int jumpCounter = 0; //Count how many jumps have been taken in a turn
+	private int x0, y0, x1, y1, tempX, tempY; //Positions of pieces on the board
 	private int winCounter1 = 3, winCounter2 = 7;
 	
-	private static Text p1Text, p2Text, redWinText, blueWinText;
+	private static Text p1Text, p2Text, redWinText, blueWinText; //Game texts
 
 	public static Group pieceGroup = new Group(); // http://tutorials.jenkov.com/javafx/group.html
 	public static Group tileGroup = new Group();
 	public static Group resetPieceGroup = new Group();
 	public static Group resetTileGroup = new Group();
 
-	private Tiles[][] boardArr = new Tiles[tileWidth][tileHeight];
+	private Tiles[][] boardArr = new Tiles[tileWidth][tileHeight]; //Array of game board
 	
 	private Pane mainPane;
 	private StackPane pane;
@@ -99,24 +99,24 @@ public class HalmaGame extends Application {
 		resetBtn.setOnAction(new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent e) {
 				primaryStage.close();
-				redCounter = 3;
+				redCounter = 3; //reset all counters
 				blueCounter = 11;
 				turnCounter = 1;
 				moveCounter = 0;
 				jumpCounter = 0;
 				board.getChildren().clear();
-				if(p2Text.isVisible() == true) {
+				if(p2Text.isVisible() == true) { //If it is p2's turn, return to p1
 					mainPane.getChildren().remove(p2Text);
 					mainPane.getChildren().remove(p1Text);
 					mainPane.getChildren().add(p1Text);
 				}
-				if(redWinText.isVisible() == true) {
+				if(redWinText.isVisible() == true) { //Remove win text 
 					pane.getChildren().remove(redWinText);
 				}
 				if(blueWinText.isVisible() == true) {
 					pane.getChildren().remove(blueWinText);
 				}
-				resetBoard();
+				resetBoard(); //Redraw tiles and pieces
 				primaryStage.show();
 			}
 		});
@@ -126,7 +126,7 @@ public class HalmaGame extends Application {
 		instructionsBtn.setOnAction(new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent e) {
 				final Stage dialog = new Stage();
-                dialog.initModality(Modality.APPLICATION_MODAL);
+                dialog.initModality(Modality.APPLICATION_MODAL); //https://stackoverflow.com/questions/22166610/how-to-create-a-popup-windows-in-javafx
                 dialog.initOwner(primaryStage);
                 dialog.setTitle("Instructions");
                 Label label = new Label("The aim of the game is to be the first to player to move all pieces across the board and into opposing corner. "
@@ -137,7 +137,7 @@ public class HalmaGame extends Application {
                 		+ "continue by hopping over another piece. \n \n (FOR JUMPING: PLEASE JUMP ACROSS EACH PIECE ONE AT A TIME)"
                 		+ " \n \n https://www.mastersofgames.com/rules/halma-rules.htm");
                 label.setFont(Font.font("Default", FontWeight.BOLD, 15));
-                label.setWrapText(true);
+                label.setWrapText(true); //Wraps text
                 VBox dialogVbox = new VBox(20);
                 dialogVbox.getChildren().add(label);
                 Scene dialogScene = new Scene(dialogVbox, 700, 200);
@@ -149,10 +149,10 @@ public class HalmaGame extends Application {
 		Button endTurnBtn = new Button("End Turn");
 		endTurnBtn.setOnAction(new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent e) {
-				moveCounter = 0;
+				moveCounter = 0; //Reset counters
 				jumpCounter = 0;
-				checkForWin();
-				getTurn();
+				checkForWin(); //Checks to see if all 10 game pieces are in the opposing corner
+				getTurn(); //switches turns
 			}
 		});
 
@@ -178,28 +178,28 @@ public class HalmaGame extends Application {
 	private Piece createPiece(Piece.PieceColor color, int x, int y) {
 		Piece piece = new Piece(color, x, y);
 		
-		piece.setOnMouseReleased(event -> {
+		piece.setOnMouseReleased(event -> { //New position of piece
 			int newX = toBoard(piece.getLayoutX());
 			int newY = toBoard(piece.getLayoutY());
 			
 			MoveResult result = tryMove(piece, newX, newY);
 			
-			int x0 = toBoard(piece.getOldX());
+			int x0 = toBoard(piece.getOldX()); //Compares old position with new position, to see if movement has occurred
 			int y0 = toBoard(piece.getOldY());
 			
 			switch (result.getType()) {
 			case NONE: piece.abortMove(); break;
 			
-			case NORMAL: piece.move(newX, newY);
-			boardArr[x0][y0].setPiece(null);
-			boardArr[newX][newY].setPiece(piece);
-			jumpCounter++;
+			case NORMAL: piece.move(newX, newY); //Movement vertically, horizontally, or diagonally
+			boardArr[x0][y0].setPiece(null); //Remove piece from previous position
+			boardArr[newX][newY].setPiece(piece); //PLace piece on new position
+			jumpCounter++; //Only allow 1 movement per turn, but multiple jumps
 			moveCounter++; break;
 			
 			case JUMP: piece.move(newX, newY);
 			boardArr[x0][y0].setPiece(null);
-			boardArr[newX][newY].setPiece(piece);
-			moveCounter++; break;
+			boardArr[newX][newY].setPiece(piece); 
+			moveCounter++; break; //Jump does not have a jumpCounter to differentiate a regular movement and a jump move
 			}
 		});
 		
@@ -209,30 +209,30 @@ public class HalmaGame extends Application {
 	
 	private MoveResult tryMove(Piece piece, int newX, int newY) {
 		
-		if (turnCounter % 2 != 0) {
+		if (turnCounter % 2 != 0) { //Determine who's turn it is
 			if (piece.getColor() == Piece.PieceColor.BLUE) { //Cannot move blue pieces during red turn
 				return new MoveResult(MoveType.NONE);
 			} else {
 
-				if (boardArr[newX][newY].hasPiece()) {
+				if (boardArr[newX][newY].hasPiece()) { //Cannot move a piece into a tile that already has a piece
 					return new MoveResult(MoveType.NONE);
 				}
 
-				int x0 = toBoard(piece.getOldX());
+				int x0 = toBoard(piece.getOldX()); //Position of piece before movement
 				int y0 = toBoard(piece.getOldY());
 
-				if ((Math.abs(newX - x0) == 1 && jumpCounter == 0 && moveCounter == 0) || (Math.abs(newY - y0) == 1 && jumpCounter == 0 && moveCounter == 0)) {
+				if ((Math.abs(newX - x0) == 1 && jumpCounter == 0 && moveCounter == 0) || (Math.abs(newY - y0) == 1 && jumpCounter == 0 && moveCounter == 0)) { //Cannot make a normal move after a jump
 					while ((Math.abs(newX - x0) + Math.abs(newY - y0) <= 2)) { // Make sure you cant move more than 2 spaces
 						return new MoveResult(MoveType.NORMAL);
 					}
-				} else if ((Math.abs(newX - x0) == 2) || (Math.abs(newY - y0) == 2)) {
+				} else if ((Math.abs(newX - x0) == 2) || (Math.abs(newY - y0) == 2)) { //Jumps move 2 spaces while regular movement is 1 space
 
-					int x1 = x0 + (newX - x0) / 2;
-					int y1 = y0 + (newY - y0) / 2;
+					int x1 = x0 + (newX - x0) / 2; //X coordinate of the piece being jumped
+					int y1 = y0 + (newY - y0) / 2; ////Y coordinate of the piece being jumped
 
-					if(jumpCounter == 0 || (x0 == tempX && y0 == tempY)) {
-					if (boardArr[x1][y1].hasPiece()) {
-						jumpCounter++;
+					if(jumpCounter == 0 || (x0 == tempX && y0 == tempY)) { //Checks location on the board to make sure that the same piece is jumping
+					if (boardArr[x1][y1].hasPiece()) { //Checks to see if movement is a jump
+						jumpCounter++; //Counts jumps
 						tempX = newX;
 						tempY = newY;
 						return new MoveResult(MoveType.JUMP);
@@ -243,7 +243,7 @@ public class HalmaGame extends Application {
 
 		}
 
-		if (turnCounter % 2 == 0) {
+		if (turnCounter % 2 == 0) { //Blue turn
 			if (piece.getColor() == Piece.PieceColor.RED) { //cannot move red pieces
 				return new MoveResult(MoveType.NONE);
 			} else {
@@ -292,7 +292,7 @@ public class HalmaGame extends Application {
 				mainPane.getChildren().add(p1Text);
 			}
 		} else {
-			if(p1Text.isVisible() == true) {
+			if(p1Text.isVisible() == true) { //Player 2's turn
 				mainPane.getChildren().remove(p1Text);
 				mainPane.getChildren().add(p2Text);
 			} else {
@@ -308,12 +308,12 @@ public class HalmaGame extends Application {
 		winCounter1 = 3;
 		winCounter2 = 7;
 
-		for (int x = 0; x < 4; x++) {
+		for (int x = 0; x < 4; x++) { //Checks to see if the designated coordinates on the board contain all blue pieces to win
 			for (int y = winCounter1; y >= 0; y--) {
 				while (boardArr[x][y].hasPiece() == true) {
 					if (boardArr[x][y].hasBluePiece() == true && boardArr[x][y].hasPiece() == true) {
-						counter++;
-						if (counter == 10) {
+						counter++; //Counts how many blue pieces are in the winning formation of coordinates
+						if (counter == 10) { //If all 10 blue pieces are in the opposite corner, blue wins
 							pane.getChildren().add(blueWinText);
 						} else {
 							break;
@@ -351,10 +351,10 @@ public class HalmaGame extends Application {
 	public void createBoard() {
 		board.setPrefSize((tileWidth * tileSize), (tileHeight * tileSize));
 
-		for (int x = 0; x < tileHeight; x++) {
+		for (int x = 0; x < tileHeight; x++) { //Makes an 8x8 board staring with coordinate 0,0 ranging to 7,7
 			for (int y = 0; y < tileWidth; y++) {
 				Tiles tile = new Tiles((x + y) % 2 == 0, x, y);
-				boardArr[x][y] = tile;
+				boardArr[x][y] = tile; //Array map of board
 				
 				tileGroup.getChildren().add(tile);
 
@@ -384,11 +384,11 @@ public class HalmaGame extends Application {
 	}
 	
 	public void resetBoard() {
-		pieceGroup.getChildren().clear();
+		pieceGroup.getChildren().clear(); //clear board to redraw
 		tileGroup.getChildren().clear();
 		board.setPrefSize((tileWidth * tileSize), (tileHeight * tileSize));
 
-		for (int x = 0; x < tileHeight; x++) {
+		for (int x = 0; x < tileHeight; x++) { //redraw board
 			for (int y = 0; y < tileWidth; y++) {
 				Tiles tile = new Tiles((x + y) % 2 == 0, x, y);
 				boardArr[x][y] = tile;

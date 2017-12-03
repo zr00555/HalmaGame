@@ -13,11 +13,11 @@ public class Tiles extends Rectangle{
 		this.piece = piece;
 	}
 	
-	public boolean hasPiece() {
+	public boolean hasPiece() { //Is there a piece on this coordinate of the board
 		return piece != null;
 	}
 	
-	public boolean hasRedPiece() {
+	public boolean hasRedPiece() { //Is there a red piece on this coordinate of the board
 		if (piece.getColor() == Piece.PieceColor.RED && piece != null) {
 			return true;
 		} else {
@@ -25,7 +25,7 @@ public class Tiles extends Rectangle{
 		}
 	}
 	
-	public boolean hasBluePiece() {
+	public boolean hasBluePiece() { //IS there a blue piece on this coordinate of the board
 		if (piece.getColor() == Piece.PieceColor.BLUE && piece != null) {
 			return true;
 		} else {
@@ -33,7 +33,7 @@ public class Tiles extends Rectangle{
 		}
 	}
 
-	public Tiles(boolean color, int x, int y) {
+	public Tiles(boolean color, int x, int y) { //creates checkered tiles (help from fxtutorials)
 		setWidth(HalmaGame.tileSize);
 		setHeight(HalmaGame.tileSize);
 		

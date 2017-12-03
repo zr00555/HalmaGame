@@ -15,7 +15,7 @@ public class Piece extends StackPane{
 		return oldY;
 	}
 
-	public PieceColor getColor() {
+	public PieceColor getColor() { //Returns red or blue
 		return color;
 	}
 
@@ -36,7 +36,7 @@ public class Piece extends StackPane{
 		
 		move(x, y);
 		
-		Circle gamePiece = new Circle(HalmaGame.tileSize * .3);
+		Circle gamePiece = new Circle(HalmaGame.tileSize * .3); //Create game pieces
 		gamePiece.setFill(color == PieceColor.RED ? Color.RED : Color.ROYALBLUE);
 		gamePiece.setStroke(Color.BLACK);
 		gamePiece.setStrokeWidth(HalmaGame.tileSize * 0.03);
@@ -46,7 +46,7 @@ public class Piece extends StackPane{
 		
 		getChildren().addAll(gamePiece);
 		
-		setOnMousePressed(event -> {
+		setOnMousePressed(event -> { //Drag and drop
 			mouseX = event.getSceneX();
 			mouseY = event.getSceneY();
 		});
@@ -62,7 +62,7 @@ public class Piece extends StackPane{
 		relocate(oldX, oldY);
 	}
 	
-	public void abortMove() {
+	public void abortMove() { //Keeps piece in place
 		relocate(oldX, oldY);
 	}
 
