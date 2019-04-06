@@ -1,4 +1,4 @@
-# Final Project: Due December 3rd 2017
+# Halma
 
 Create your graphical version of the two player Halma game. 
 
